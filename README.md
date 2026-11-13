@@ -111,8 +111,6 @@ src/
 ## Tecnologias obrigatórias
 
 - **Ferramenta:** uma das três opções abaixo (não são aceitas outras ferramentas):
-  - Claude Code
-  - Gemini CLI
   - OpenAI Codex
 - **Recurso:** Custom Skills (ou o equivalente na ferramenta escolhida)
 - **Formato dos arquivos de referência:** Markdown
