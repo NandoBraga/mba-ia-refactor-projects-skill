@@ -1,13 +1,14 @@
 import smtplib
+import os
 from datetime import datetime
 
 class NotificationService:
     def __init__(self):
         self.notifications = []
-        self.email_host = 'smtp.gmail.com'
-        self.email_port = 587
-        self.email_user = 'taskmanager@gmail.com'
-        self.email_password = 'senha123'
+        self.email_host = os.environ.get('SMTP_HOST', 'smtp.gmail.com')
+        self.email_port = int(os.environ.get('SMTP_PORT', '587'))
+        self.email_user = os.environ.get('SMTP_USER', '')
+        self.email_password = os.environ.get('SMTP_PASSWORD', '')
 
     def send_email(self, to, subject, body):
         try:

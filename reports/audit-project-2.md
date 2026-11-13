@@ -61,6 +61,13 @@
 
 Nenhuma API deprecated foi confirmada nos arquivos inspecionados. O `package.json` usa ranges (`^`) e não foi feita resolução/consulta à versão efetivamente instalada; qualquer migração deve confirmar a versão travada em `package-lock.json` e a documentação correspondente.
 
-## Confirmação para refatorar
+## Fase 3 — Refatoração e validação
 
-Fase 3 não iniciada. Aguardando confirmação explícita para modificar o código.
+- `AppManager` e `utils.js` foram substituídos por configuração, repositório, serviços, controllers e rotas.
+- Checkout usa `crypto.scryptSync`, não registra cartão/chave e exige senha.
+- Relatório financeiro usa consulta agrupada e exige `x-admin-key` configurado por ambiente.
+- Boot e endpoints não foram executados porque Node.js não está disponível no `PATH`.
+
+## Status da Fase 3
+
+Fase 3 executada após confirmação explícita. A validação de runtime permanece bloqueada pela ausência do Node.js.

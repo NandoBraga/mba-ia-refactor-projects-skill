@@ -311,8 +311,11 @@ desafio-skills/
 │   │           └── ...
 │   ├── src/
 │   │   ├── app.js
-│   │   ├── AppManager.js
-│   │   └── utils.js
+│   │   ├── config/
+│   │   ├── controllers/
+│   │   ├── repositories/
+│   │   ├── routes/
+│   │   └── services/
 │   ├── api.http
 │   └── package.json
 │
@@ -379,6 +382,16 @@ desafio-skills/
 - Pré-requisitos: OpenAI Codex CLI instalado e configurado
 - Comandos para executar a skill em cada projeto
 - Como validar que a refatoração funcionou
+
+## Resultados da Fase 3
+
+| Projeto | Refatoração | Validação |
+|---|---|---|
+| `code-smells-project` | Configuração externa, SQL parametrizado, hash de senhas e queries de pedidos com `JOIN` | `py_compile`, `/health`, `/produtos`, `/usuarios` e `/login` aprovados em banco temporário |
+| `ecommerce-api-legacy` | Configuração, repository, services, controllers e routes; remoção de segredos e logs de cartão | Boot e endpoints pendentes porque Node.js não está disponível no ambiente |
+| `task-manager-api` | Configuração externa, hash seguro, token assinado e migração de `Query.get()` | Compilação, `/health`, criação de usuário e login aprovados em banco temporário |
+
+As limitações de runtime estão detalhadas em `reports/audit-project-2.md` e `reports/audit-project-3.md`.
 
 ### Ordem de execução sugerida
 

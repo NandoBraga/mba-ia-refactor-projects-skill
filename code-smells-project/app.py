@@ -1,11 +1,13 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify
 from flask_cors import CORS
 import controllers
 from database import get_db
+from config import DEBUG, SECRET_KEY
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = "minha-chave-super-secreta-123"
-app.config["DEBUG"] = True
+if SECRET_KEY:
+    app.config["SECRET_KEY"] = SECRET_KEY
+app.config["DEBUG"] = DEBUG
 CORS(app)
 
 app.add_url_rule("/produtos", "listar_produtos", controllers.listar_produtos, methods=["GET"])
@@ -56,27 +58,6 @@ def reset_database():
     print("!!! BANCO DE DADOS RESETADO !!!")
     return jsonify({"mensagem": "Banco de dados resetado", "sucesso": True}), 200
 
-@app.route("/admin/query", methods=["POST"])
-def executar_query():
-    dados = request.get_json()
-    query = dados.get("sql", "")
-    if not query:
-        return jsonify({"erro": "Query não informada"}), 400
-
-    db = get_db()
-    cursor = db.cursor()
-    try:
-        cursor.execute(query)
-        if query.strip().upper().startswith("SELECT"):
-            rows = cursor.fetchall()
-            result = [dict(row) for row in rows]
-            return jsonify({"dados": result, "sucesso": True}), 200
-        else:
-            db.commit()
-            return jsonify({"mensagem": "Query executada", "sucesso": True}), 200
-    except Exception as e:
-        return jsonify({"erro": str(e)}), 500
-
 if __name__ == "__main__":
 
     get_db()
@@ -85,4 +66,4 @@ if __name__ == "__main__":
     print("Rodando em http://localhost:5000")
     print("=" * 50)
 
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=DEBUG)

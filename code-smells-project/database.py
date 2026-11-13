@@ -1,8 +1,9 @@
 import sqlite3
-import os
+from config import DATABASE_PATH
+from werkzeug.security import generate_password_hash
 
 db_connection = None
-db_path = "loja.db"
+db_path = DATABASE_PATH
 
 def get_db():
     global db_connection
@@ -73,14 +74,23 @@ def get_db():
             )
 
             usuarios = [
-                ("Admin", "admin@loja.com", "admin123", "admin"),
-                ("João Silva", "joao@email.com", "123456", "cliente"),
-                ("Maria Santos", "maria@email.com", "senha123", "cliente"),
+                ("Admin", "admin@loja.com", generate_password_hash("admin123"), "admin"),
+                ("João Silva", "joao@email.com", generate_password_hash("123456"), "cliente"),
+                ("Maria Santos", "maria@email.com", generate_password_hash("senha123"), "cliente"),
             ]
             cursor.executemany(
                 "INSERT INTO usuarios (nome, email, senha, tipo) VALUES (?, ?, ?, ?)",
                 usuarios
             )
+            db_connection.commit()
+
+            usuarios = cursor.execute("SELECT id, senha FROM usuarios").fetchall()
+            for usuario in usuarios:
+                if not usuario[1].startswith(("scrypt:", "pbkdf2:")):
+                    cursor.execute(
+                        "UPDATE usuarios SET senha = ? WHERE id = ?",
+                        (generate_password_hash(usuario[1]), usuario[0]),
+                    )
             db_connection.commit()
 
     return db_connection

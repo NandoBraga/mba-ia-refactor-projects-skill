@@ -1,8 +1,9 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from database import db
 from models.user import User
 from models.task import Task
 from datetime import datetime
+from itsdangerous import URLSafeTimedSerializer
 import hashlib, json, re
 
 user_bp = Blueprint('users', __name__)
@@ -26,7 +27,7 @@ def get_users():
 
 @user_bp.route('/users/<int:user_id>', methods=['GET'])
 def get_user(user_id):
-    user = User.query.get(user_id)
+    user = db.session.get(User, user_id)
     if not user:
         return jsonify({'error': 'Usuário não encontrado'}), 404
 
@@ -91,7 +92,7 @@ def create_user():
 
 @user_bp.route('/users/<int:user_id>', methods=['PUT'])
 def update_user(user_id):
-    user = User.query.get(user_id)
+    user = db.session.get(User, user_id)
     if not user:
         return jsonify({'error': 'Usuário não encontrado'}), 404
 
@@ -133,7 +134,7 @@ def update_user(user_id):
 
 @user_bp.route('/users/<int:user_id>', methods=['DELETE'])
 def delete_user(user_id):
-    user = User.query.get(user_id)
+    user = db.session.get(User, user_id)
     if not user:
         return jsonify({'error': 'Usuário não encontrado'}), 404
 
@@ -152,7 +153,7 @@ def delete_user(user_id):
 
 @user_bp.route('/users/<int:user_id>/tasks', methods=['GET'])
 def get_user_tasks(user_id):
-    user = User.query.get(user_id)
+    user = db.session.get(User, user_id)
     if not user:
         return jsonify({'error': 'Usuário não encontrado'}), 404
 
@@ -207,5 +208,5 @@ def login():
     return jsonify({
         'message': 'Login realizado com sucesso',
         'user': user.to_dict(),
-        'token': 'fake-jwt-token-' + str(user.id)
+        'token': URLSafeTimedSerializer(current_app.config['SECRET_KEY']).dumps({'user_id': user.id})
     }), 200

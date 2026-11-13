@@ -283,10 +283,7 @@ def health_check():
             },
 
             "versao": "1.0.0",
-            "ambiente": "producao",
-            "db_path": "loja.db",
-            "debug": True,
-            "secret_key": "minha-chave-super-secreta-123"
+            "ambiente": "producao"
         }), 200
     except Exception as e:
         return jsonify({"status": "erro", "detalhes": str(e)}), 500

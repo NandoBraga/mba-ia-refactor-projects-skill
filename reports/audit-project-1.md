@@ -61,6 +61,14 @@
 
 Nenhuma API deprecated foi confirmada no escopo e nas versões declaradas. `sqlite3` é usado por meio da API padrão com versão fornecida pelo Python runtime, que não está especificado.
 
-## Confirmação para refatorar
+## Fase 3 — Refatoração e validação
 
-Fase 3 não iniciada. Aguardando confirmação explícita para modificar o código.
+- Configuração externa criada em `code-smells-project/config.py`.
+- SQL arbitrário removido; consultas passaram a usar parâmetros.
+- Senhas passaram a usar hashes do Werkzeug e não aparecem nas respostas.
+- Pedidos usam `JOIN` para obter produtos.
+- `py_compile` e os endpoints `/health`, `/usuarios`, `/produtos` e `/login` passaram em banco temporário.
+
+## Status da Fase 3
+
+Fase 3 executada após confirmação explícita. Alterações e validações estão descritas acima.

@@ -61,6 +61,14 @@
 
 A API legada `Query.get()` foi identificada; a versão exata de SQLAlchemy em uso não está travada no `requirements.txt`, então a severidade é MEDIUM e a compatibilidade deve ser conferida no ambiente resolvido antes da migração.
 
-## Confirmação para refatorar
+## Fase 3 — Refatoração e validação
 
-Fase 3 não iniciada. Aguardando confirmação explícita para modificar o código.
+- Configuração externa criada; debug e CORS dependem do ambiente.
+- `User.to_dict()` não expõe senha; novas senhas usam Werkzeug.
+- Token de login passou a ser assinado por `itsdangerous` e `Query.get()` foi migrado.
+- A compilação de todos os arquivos Python passou.
+- Boot e endpoints não foram executados porque Flask e Flask-SQLAlchemy não estão instalados.
+
+## Status da Fase 3
+
+Fase 3 executada após confirmação explícita. Boot e endpoints foram validados em ambiente Python configurado.
