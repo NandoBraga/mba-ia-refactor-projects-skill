@@ -32,7 +32,7 @@ Para padronizar a sua auditoria e os relatórios gerados pela IA, utilize a segu
 ```bash
 # Executar a skill no projeto com problemas
 cd code-smells-project
-claude "/refactor-arch"
+/refactor-arch
 ```
 
 ```
@@ -118,7 +118,7 @@ src/
 - **Formato dos arquivos de referência:** Markdown
 - **Projetos-alvo:** Python/Flask (2 projetos) e Node.js/Express (1 projeto) (fornecidos no repositório base)
 
-> **Nota sobre a ferramenta:** Os exemplos deste documento usam o Claude Code (`.claude/skills/`) como referência, pois é a ferramenta utilizada no curso. Se você optar por Gemini CLI ou Codex, adapte o nome da pasta e o comando de invocação conforme a convenção dela — o conceito de skill e a estrutura interna (SKILL.md + arquivos de referência) permanecem os mesmos.
+> **Nota sobre a ferramenta:** Este repositório usa o OpenAI Codex. A skill fica em `.agents/skills/` e é invocada pelo comando `codex "/refactor-arch"` a partir da raiz de cada projeto.
 
 ## Requisitos
 
@@ -166,7 +166,7 @@ Criar arquivos de referência em Markdown que forneçam à skill o conhecimento 
 | Guidelines de arquitetura | Regras do padrão MVC alvo (camadas Models, Views/Routes e Controllers, responsabilidades de cada uma) |
 | Playbook de refatoração | Padrões concretos de transformação para cada anti-pattern (com exemplos de código) |
 
-> **Nota:** Você tem liberdade para organizar os arquivos de referência como preferir — pode usar os nomes e a quantidade de arquivos que fizer sentido para sua skill. O importante é que todas as 5 áreas de conhecimento estejam cobertas. O nome da skill (`refactor-arch`) e o arquivo `SKILL.md` são obrigatórios e não devem ser alterados. O path da skill segue a convenção da ferramenta escolhida (no Claude Code, por exemplo, é `.claude/skills/refactor-arch/`).
+> **Nota:** Você tem liberdade para organizar os arquivos de referência como preferir — pode usar os nomes e a quantidade de arquivos que fizer sentido para sua skill. O importante é que todas as 5 áreas de conhecimento estejam cobertas. O nome da skill (`refactor-arch`) e o arquivo `SKILL.md` são obrigatórios e não devem ser alterados. Neste projeto, o path da skill é `.agents/skills/refactor-arch/`.
 
 **Requisitos da skill:**
 
@@ -183,13 +183,13 @@ Execute sua skill nos 3 projetos e valide que ela funciona em todas as stacks.
 
 #### Projeto 1 — code-smells-project (Python/Flask)
 
-Invocar a skill no Claude Code:
+Invocar a skill no OpenAI Codex:
 
 ```bash
-claude "/refactor-arch"
+codex "/refactor-arch"
 ```
 
-> **Nota:** O comando acima é o exemplo com Claude Code. Se você estiver usando Gemini CLI ou Codex, utilize o comando equivalente para invocar uma skill na sua ferramenta.
+> **Nota:** O comando acima usa o OpenAI Codex CLI e deve ser executado na raiz do projeto analisado.
 
 - Verificar que a Fase 1 detecta corretamente a stack e imprime o resumo
 - Verificar que a Fase 2 encontra no mínimo 5 dos problemas documentados na sua análise manual
@@ -205,12 +205,12 @@ claude "/refactor-arch"
 
 Prove que sua skill é reutilizável em outro projeto de backend, mas com stack diferente.
 
-- Copiar a pasta `.claude/skills/refactor-arch/` para dentro de `ecommerce-api-legacy/`
+- Copiar a pasta `.agents/skills/refactor-arch/` para dentro de `ecommerce-api-legacy/`
 - Invocar a skill:
 
 ```bash
 cd ../ecommerce-api-legacy
-claude "/refactor-arch"
+codex "/refactor-arch"
 ```
 
 - Verificar que as 3 fases executam corretamente neste projeto
@@ -221,12 +221,12 @@ claude "/refactor-arch"
 
 Agora o teste com um projeto Python/Flask que já possui alguma organização de camadas (models, routes, services, utils).
 
-- Copiar a pasta `.claude/skills/refactor-arch/` para dentro de `task-manager-api/`
+- Copiar a pasta `.agents/skills/refactor-arch/` para dentro de `task-manager-api/`
 - Invocar a skill:
 
 ```bash
 cd ../task-manager-api
-claude "/refactor-arch"
+codex "/refactor-arch"
 ```
 
 - Verificar que:
@@ -277,7 +277,7 @@ Para cada projeto refatorado, valide o seguinte checklist:
 
 Repositório público no GitHub (fork do repositório base) contendo:
 
-- Skill completa em `.claude/skills/refactor-arch/` (dentro dos 3 projetos)
+- Skill completa em `.agents/skills/refactor-arch/` (dentro dos 3 projetos)
 - Código refatorado dos 3 projetos (resultado da execução da Fase 3, commitado no repositório)
 - Relatórios de auditoria em `reports/` (3 arquivos)
 - `README.md` atualizado
@@ -286,14 +286,14 @@ Repositório público no GitHub (fork do repositório base) contendo:
 
 Faça um fork do repositório base contendo os três projetos com code smells.
 
-> **Nota:** A estrutura abaixo usa Claude Code como exemplo (`.claude/skills/`). Se estiver usando outra ferramenta, adapte os caminhos conforme a convenção dela.
+> **Nota:** A estrutura abaixo segue a convenção do OpenAI Codex (`.agents/skills/`).
 
 ```
 desafio-skills/
 ├── README.md                              # Sua documentação
 │
 ├── code-smells-project/                   # Projeto 1 — Python/Flask (API de E-commerce)
-│   ├── .claude/
+│   ├── .agents/
 │   │   └── skills/
 │   │       └── refactor-arch/             # ← SUA SKILL AQUI
 │   │           ├── SKILL.md
@@ -305,7 +305,7 @@ desafio-skills/
 │   └── requirements.txt
 │
 ├── ecommerce-api-legacy/                  # Projeto 2 — Node.js/Express (LMS API com checkout)
-│   ├── .claude/
+│   ├── .agents/
 │   │   └── skills/
 │   │       └── refactor-arch/             # ← CÓPIA DA SKILL
 │   │           └── ...
@@ -317,7 +317,7 @@ desafio-skills/
 │   └── package.json
 │
 ├── task-manager-api/                      # Projeto 3 — Python/Flask (API de Task Manager)
-│   ├── .claude/
+│   ├── .agents/
 │   │   └── skills/
 │   │       └── refactor-arch/             # ← CÓPIA DA SKILL
 │   │           └── ...
@@ -338,7 +338,7 @@ desafio-skills/
 
 **O que você vai criar:**
 
-- `.claude/skills/refactor-arch/` — A skill completa (SKILL.md + arquivos de referência)
+- `.agents/skills/refactor-arch/` — A skill completa (SKILL.md + arquivos de referência)
 - Código refatorado dos 3 projetos — resultado da execução da Fase 3, commitado no repositório
 - `reports/audit-project-{1,2,3}.md` — Relatório de auditoria de cada projeto
 - `README.md` — Documentação do seu processo
@@ -376,7 +376,7 @@ desafio-skills/
 
 **D) Seção "Como Executar":**
 
-- Pré-requisitos (a ferramenta escolhida — Claude Code, Gemini CLI ou Codex — instalada e configurada)
+- Pré-requisitos: OpenAI Codex CLI instalado e configurado
 - Comandos para executar a skill em cada projeto
 - Como validar que a refatoração funcionou
 
@@ -395,15 +395,15 @@ Escreva o SKILL.md e os arquivos de referência.
 ```bash
 # Projeto 1
 cd code-smells-project
-claude "/refactor-arch"
+codex "/refactor-arch"
 
 # Projeto 2
 cd ../ecommerce-api-legacy
-claude "/refactor-arch"
+codex "/refactor-arch"
 
 # Projeto 3
 cd ../task-manager-api
-claude "/refactor-arch"
+codex "/refactor-arch"
 ```
 
 Salve a saída da Fase 2 de cada projeto em `reports/audit-project-{1,2,3}.md`.
@@ -429,10 +429,9 @@ A skill deve atingir os seguintes mínimos em **todos os 3 projetos**:
 
 ## Referências
 
-- [Claude Code: Skills](https://docs.anthropic.com/en/docs/claude-code/skills) — Documentação oficial sobre como criar e estruturar Skills
-- [Claude Code: Overview](https://docs.anthropic.com/en/docs/claude-code/overview) — Visão geral do Claude Code e suas capacidades
-- [The Complete Guide to Building Skills for Claude (PDF)](https://resources.anthropic.com/hubfs/The-Complete-Guide-to-Building-Skill-for-Claude.pdf) — Guia completo da Anthropic sobre construção de Skills
-- [Equipping Agents for the Real World with Agent Skills](https://claude.com/blog/equipping-agents-for-the-real-world-with-agent-skills) — Blog oficial da Anthropic sobre Agent Skills
+- [OpenAI Codex CLI](https://developers.openai.com/codex/cli/) — Documentação oficial da ferramenta
+- [OpenAI Codex Skills](https://developers.openai.com/codex/skills/) — Documentação oficial sobre skills
+- [OpenAI Codex](https://openai.com/codex/) — Visão geral do Codex
 
 ---
 
