@@ -352,107 +352,61 @@ desafio-skills/
 
 > **Dica:** Cada projeto contém problemas intencionais de diferentes severidades (CRITICAL, HIGH, MEDIUM, LOW), incluindo falhas de segurança, violações arquiteturais e problemas de qualidade de código. Parte do desafio é identificá-los por conta própria através da análise manual do código.
 
-### README.md deve conter
+## A) Análise Manual
 
-**A) Seção "Análise Manual":**
+### code-smells-project
 
-- Lista dos problemas identificados manualmente em cada projeto
-- Classificação por severidade
-- Justificativa de por que cada problema é relevante
+- CRITICAL — SQL arbitrário em `/admin/query` e SQL construído por concatenação: permite manipulação/execução indevida de dados.
+- CRITICAL/HIGH — segredo de sessão hardcoded, debug habilitado e detalhes sensíveis expostos no health check.
+- HIGH — senhas em texto puro ou sem proteção adequada e incluídas em respostas.
+- MEDIUM — padrão N+1 na montagem de pedidos.
+- LOW — responsabilidades de quatro domínios concentradas em `models.py`.
 
-**B) Seção "Construção da Skill":**
+### ecommerce-api-legacy
 
-- Decisões de design: como estruturou o SKILL.md e os arquivos de referência
-- Quais anti-patterns incluiu no catálogo e por quê
-- Como garantiu que a skill é agnóstica de tecnologia
-- Desafios encontrados e como resolveu
+- CRITICAL — credenciais, senha SMTP e chave de gateway hardcoded em configuração.
+- CRITICAL — dados de cartão e chave registrados em logs.
+- HIGH — senha e autenticação implementadas com fallback e pseudo-hash inseguro.
+- HIGH — relatório financeiro administrativo sem autorização.
+- MEDIUM — relatório financeiro em loops com consultas encadeadas.
+- MEDIUM — `AppManager` mistura banco, schema, rotas e domínio.
 
-**C) Seção "Resultados":**
+### task-manager-api
 
-- Resumo dos relatórios de auditoria dos 3 projetos (quantos findings por severidade em cada)
-- Comparação antes/depois da estrutura de cada projeto
-- Checklist de validação preenchido para cada projeto
-- Screenshots ou logs mostrando as aplicações rodando após refatoração
-- Observações sobre como a skill se comportou em stacks diferentes
+- CRITICAL — hashes MD5 sem salt e senha incluída na serialização pública.
+- HIGH — segredo hardcoded, debug e CORS permissivo.
+- HIGH — token previsível chamado de JWT sem assinatura/expiração.
+- HIGH — regras de tarefa concentradas em rotas de Flask; corrigidas extraindo `TaskService`.
+- MEDIUM — consultas N+1 em listagens e relatórios.
+- MEDIUM — uso de `Query.get()` legada antes da migração para `db.session.get()`.
 
-**D) Seção "Como Executar":**
+## B) Construção da Skill
 
-- Pré-requisitos: OpenAI Codex CLI instalado e configurado
-- Comandos para executar a skill em cada projeto
-- Como validar que a refatoração funcionou
+A skill está organizada em `SKILL.md` e referências para análise, catálogo, template, guidelines MVC e playbook. O catálogo exige evidência concreta e o playbook inclui agora o padrão `Rotas Flask concentrando regras e persistência → casos de uso em serviço`.
 
-## Resultados da Fase 3
+A Fase 3 reforça que handlers não devem validar regras de domínio, executar ORM/commits, calcular estatísticas ou montar serializações complexas. A extração aplicada no Task Manager criou `services/task_service.py`; `routes/task_routes.py` passou a delegar CRUD, busca e estatísticas.
 
-| Projeto | Refatoração | Validação |
-|---|---|---|
-| `code-smells-project` | Configuração externa, SQL parametrizado, hash de senhas e queries de pedidos com `JOIN` | `py_compile`, `/health`, `/produtos`, `/usuarios` e `/login` aprovados em banco temporário |
-| `ecommerce-api-legacy` | Configuração, repository, services, controllers e routes; remoção de segredos e logs de cartão | Boot e endpoints pendentes porque Node.js não está disponível no ambiente |
-| `task-manager-api` | Configuração externa, hash seguro, token assinado e migração de `Query.get()` | Compilação, `/health`, criação de usuário e login aprovados em banco temporário |
+## C) Resultados
 
-As limitações de runtime estão detalhadas em `reports/audit-project-2.md` e `reports/audit-project-3.md`.
+| Projeto | Findings iniciais | Resultado da Fase 3 |
+|---|---:|---|
+| `code-smells-project` | 6 | SQL e configuração endurecidos; senhas protegidas; endpoints principais validados |
+| `ecommerce-api-legacy` | 6 | estrutura MVC criada em config/repository/service/controller/route; Node runtime indisponível |
+| `task-manager-api` | 6 | hash/configuração/token corrigidos; `TaskService` aplicado; operações de tarefas validadas |
 
-### Ordem de execução sugerida
+## D) Como Executar
 
-**1. Analisar os projetos manualmente**
-
-Leia o código dos três projetos e documente os problemas encontrados.
-
-**2. Criar a skill**
-
-Escreva o SKILL.md e os arquivos de referência.
-
-**3. Executar nos 3 projetos**
+Pré-requisitos: OpenAI Codex CLI, Python com dependências Flask e Node.js para o projeto Express.
 
 ```bash
-# Projeto 1
 cd code-smells-project
 codex "/refactor-arch"
 
-# Projeto 2
 cd ../ecommerce-api-legacy
 codex "/refactor-arch"
 
-# Projeto 3
 cd ../task-manager-api
 codex "/refactor-arch"
 ```
 
-Salve a saída da Fase 2 de cada projeto em `reports/audit-project-{1,2,3}.md`.
-
-**4. Iterar**
-
-Se a skill não detectou problemas suficientes ou a refatoração falhou, ajuste os arquivos de referência e execute novamente. É normal precisar de 2-4 iterações.
-
-## Critérios de Aceite
-
-A skill deve atingir os seguintes mínimos em **todos os 3 projetos**:
-
-| Critério | Requisito |
-|---|---|
-| Fase 1 detecta stack corretamente | OBRIGATÓRIO (3/3 projetos) |
-| Fase 2 encontra >= 5 findings | OBRIGATÓRIO (3/3 projetos) |
-| Fase 2 inclui pelo menos 1 CRITICAL ou HIGH | OBRIGATÓRIO (3/3 projetos) |
-| Fase 3 aplicação funciona após refatoração | OBRIGATÓRIO (3/3 projetos) |
-
-**IMPORTANTE:** Todos os critérios devem ser atingidos nos 3 projetos, não apenas em um!
-
-> **Sobre o projeto 3 (task-manager-api):** Este projeto já possui alguma organização. "aplicação funciona" significa que a API inicia sem erros e todos os endpoints continuam respondendo corretamente.
-
-## Referências
-
-- [OpenAI Codex CLI](https://developers.openai.com/codex/cli/) — Documentação oficial da ferramenta
-- [OpenAI Codex Skills](https://developers.openai.com/codex/skills/) — Documentação oficial sobre skills
-- [OpenAI Codex](https://openai.com/codex/) — Visão geral do Codex
-
----
-
-## Dicas Finais
-
-- **Comece pela análise manual** — entender os problemas profundamente é essencial para criar uma skill que os detecte.
-- **O SKILL.md é um prompt** — ele instrui o agente sobre o que fazer, enquanto os arquivos de referência fornecem o conhecimento de domínio.
-- **Seja específico nos sinais de detecção** — "código ruim" não ajuda; "query SQL dentro de loop for" é acionável.
-- **Teste incrementalmente** — não tente criar a skill perfeita de primeira.
-- **A skill deve ser copiável** — se ela só funciona em um projeto específico, está acoplada demais. Teste nos 3 projetos para validar.
-- **Projetos diferentes exigem adaptação** — a Fase 3 de um projeto já parcialmente organizado não vai ter as mesmas transformações de um monolito. Sua skill deve se adaptar ao contexto.
-- **Pedir confirmação na Fase 2 é obrigatório** — o humano deve revisar o relatório antes de qualquer modificação.
-- **Consulte as referências do curso** — revise a documentação oficial da ferramenta escolhida e os materiais das aulas para relembrar a estrutura e anatomia de uma skill.
+Os relatórios ficam em `reports/audit-project-{1,2,3}.md`. Valide Flask por test client/boot HTTP e Express por `npm install`, `npm start` e chamadas aos endpoints existentes.

@@ -29,7 +29,7 @@ Só prossiga após resposta afirmativa inequívoca à proposta de refatoração.
 
 1. Planeje alterações mínimas, preserve rotas, payloads, status codes, regras de negócio, persistência e compatibilidade. Não altere schema/dados nem remova endpoints sem autorização específica.
 2. Extraia configuração e segredos para configuração externa segura; nunca imprima valores secretos. Não adicione dependências sem necessidade e compatibilidade verificada.
-3. Mantenha lógica de negócio fora de rotas/controllers quando houver benefício claro; adapte MVC ao framework e mantenha a estrutura existente quando já for adequada.
+3. Mantenha lógica de negócio fora de rotas/controllers quando houver benefício claro; adapte MVC ao framework e mantenha a estrutura existente quando já for adequada. Em Flask, rotas/blueprints devem apenas validar o envelope HTTP, delegar casos de uso a serviços e mapear retornos/erros. Se uma rota consulta modelos, cria entidades, executa commits, calcula estatísticas ou monta serializações complexas, extraia essa responsabilidade antes de concluir a Fase 3. Use o padrão `Rotas Flask concentrando regras e persistência → casos de uso em serviço` do playbook.
 4. Faça alterações incrementais. Atualize imports, wiring e documentação de execução se necessário.
 5. Valide usando os comandos e testes existentes: compile/syntax check, inicialização/boot da aplicação e verificações dos endpoints. Prefira testes automatizados e cliente HTTP já presentes; não invente sucesso quando serviço externo/segredo não está disponível. Não execute comandos destrutivos.
 6. Relate arquivos alterados, decisões, comandos executados e resultados. Liste limitações de validação e findings que permaneceram.

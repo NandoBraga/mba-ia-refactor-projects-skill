@@ -29,7 +29,7 @@ Só prossiga após resposta afirmativa inequívoca à proposta de refatoração.
 
 1. Planeje alterações mínimas, preserve rotas, payloads, status codes, regras de negócio, persistência e compatibilidade. Não altere schema/dados nem remova endpoints sem autorização específica.
 2. Extraia configuração e segredos para configuração externa segura; nunca imprima valores secretos. Não adicione dependências sem necessidade e compatibilidade verificada.
-3. Mantenha lógica de negócio fora de rotas/controllers quando houver benefício claro; adapte MVC ao framework e mantenha a estrutura existente quando já for adequada.
+3. Mantenha lógica de negócio fora de rotas/controllers quando houver benefício claro; adapte MVC ao framework e mantenha a estrutura existente quando já for adequada. Em Flask, extraia validação de domínio, consultas/commits, cálculos e serializações complexas para serviços/casos de uso; o blueprint só lê o transporte, delega e traduz resultados. Em Express, mantenha routes/controllers finos e preserve a separação por repository/service. Use o padrão correspondente do playbook e não conclua a Fase 3 apenas trocando APIs de persistência.
 4. Faça alterações incrementais. Atualize imports, wiring e documentação de execução se necessário.
 5. Valide usando os comandos e testes existentes: compile/syntax check, inicialização/boot da aplicação e verificações dos endpoints. Prefira testes automatizados e cliente HTTP já presentes; não invente sucesso quando serviço externo/segredo não está disponível. Não execute comandos destrutivos.
 6. Relate arquivos alterados, decisões, comandos executados e resultados. Liste limitações de validação e findings que permaneceram.

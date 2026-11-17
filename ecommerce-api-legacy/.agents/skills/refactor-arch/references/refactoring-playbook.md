@@ -61,3 +61,33 @@ Depois: `orders_by_user = load_orders_for_users([u.id for u in users])`; associe
 Antes: várias rotas repetem o mesmo cálculo e `if retries > 7`.
 
 Depois: extraia função de domínio reutilizável e nomeie `MAX_RETRIES = 7`; mantenha a regra em um único lugar e teste seus limites.
+
+## 11. Rotas Flask concentrando regras e persistência → casos de uso em serviço
+
+Antes (Python/Flask):
+
+```python
+@task_bp.route('/tasks', methods=['POST'])
+def create_task():
+    data = request.get_json()
+    if not data or not data.get('title'):
+        return jsonify({'error': 'Dados inválidos'}), 400
+    task = Task(title=data['title'], status='pending')
+    db.session.add(task)
+    db.session.commit()
+    return jsonify(task.to_dict()), 201
+```
+
+Depois:
+
+```python
+@task_bp.route('/tasks', methods=['POST'])
+def create_task():
+    try:
+        task = task_service.create(request.get_json())
+        return jsonify(task.to_dict()), 201
+    except ValidationError as error:
+        return jsonify({'error': str(error)}), 400
+```
+
+O handler só interpreta HTTP, delega o caso de uso e traduz o resultado. Validação de domínio, consultas, transações, cálculos e serialização ficam no serviço/modelo.

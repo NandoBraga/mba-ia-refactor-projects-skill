@@ -5,7 +5,7 @@
 - Stack: Python; Flask 3.0.0; Flask-SQLAlchemy 3.1.1; Flask-CORS 4.0.0 (`requirements.txt`)
 - Escopo: 13 arquivos de aplicação/configuração inspecionados (`app.py`, `database.py`, `seed.py`, três models, três route modules, serviço de notificações, helpers e requirements)
 - Domínio: API Task Manager com usuários, tarefas, categorias e relatórios
-- Arquitetura: separação parcial por `models/`, `routes/`, `services/` e `utils/`; porém rotas mantêm lógica de negócio, consultas e serialização.
+- Arquitetura atual: separação parcial por `models/`, `routes/`, `services/` e `utils/`; a lógica de tarefas foi extraída para `TaskService`, mas relatórios e usuários ainda concentram consultas e regras em rotas.
 - Banco: SQLite (`sqlite:///tasks.db` em `app.py:11`)
 - Execução: `python app.py`; Flask inicia em `0.0.0.0:5000` com debug ligado.
 
@@ -15,9 +15,9 @@
 |---|---:|
 | CRITICAL | 1 |
 | HIGH | 3 |
-| MEDIUM | 2 |
+| MEDIUM | 1 |
 | LOW | 0 |
-| **Total** | **6** |
+| **Total** | **5** |
 
 ## Findings
 
@@ -39,11 +39,13 @@
 - Impacto: clientes podem tratar identificador previsível como credencial, sem garantia criptográfica de integridade ou prazo.
 - Recomendação: usar mecanismo de sessão/token mantido por biblioteca compatível, assinado com segredo seguro, com expiração e validação em rotas protegidas; não denominar token simulado como JWT.
 
-### [HIGH] Controllers/rotas concentram regras de domínio e acesso a dados
-- Local: `routes/task_routes.py:85-223`, `240-299`; `routes/report_routes.py:12-101`; `routes/user_routes.py:42-90`
-- Evidência: handlers fazem validação detalhada, consultas/commits ORM, cálculo de estatísticas e montagem de respostas diretamente.
-- Impacto: regras ficam duplicadas entre endpoints e difíceis de testar sem contexto Flask/banco.
-- Recomendação: manter rotas como fronteira HTTP fina, extrair casos de uso/serviços e centralizar validação/serialização de domínio com limites coesos.
+### [HIGH] Corrigido — Rotas concentravam regras de domínio e acesso a dados
+- Local corrigido: `routes/task_routes.py`; caso de uso extraído em `services/task_service.py`
+- Evidência anterior: handlers faziam validação detalhada, consultas/commits ORM, cálculo de estatísticas e montagem de respostas diretamente.
+- Evidência atual: o blueprint só lê parâmetros/payload, delega ao `TaskService` e traduz retornos/erros HTTP; não contém `db.session`, consultas `Task.query`, criação de entidades ou serialização de tarefas.
+- Impacto resolvido: criação, consulta, atualização, busca e estatísticas ficam testáveis fora do contexto Flask e a validação/serialização está centralizada.
+- Validação: compilação passou; `GET /health`, `GET /tasks`, `POST /tasks`, `GET /tasks/<id>`, `PUT /tasks/<id>`, `GET /tasks/search`, `GET /tasks/stats` e `DELETE /tasks/<id>` retornaram sucesso em banco temporário.
+- Recomendação restante: aplicar o mesmo limite a rotas de usuários e relatórios para remover os outros concentradores.
 
 ### [MEDIUM] Padrões N+1 em listagens e relatórios
 - Local: `routes/task_routes.py:14-57`; `routes/report_routes.py:53-68`, `157-165`; `routes/user_routes.py:10-25`
@@ -51,24 +53,14 @@
 - Impacto: número de consultas cresce com os registros retornados.
 - Recomendação: usar eager loading, agregações e consultas agrupadas com joins; paginar listagens extensas.
 
-### [MEDIUM] Uso de `Query.get()` da API legada do SQLAlchemy
-- Local: por exemplo, `routes/task_routes.py:67`, `routes/user_routes.py:29` e `routes/report_routes.py:105`
-- Evidência: handlers chamam `Model.query.get(id)`. `Query.get()` é API legada em SQLAlchemy 2.x; o `requirements.txt` fixa Flask-SQLAlchemy 3.1.1, mas não fixa a versão transitiva de SQLAlchemy.
-- Impacto: manutenção sobre interface legada e possível incompatibilidade futura; não foi confirmada a versão efetivamente instalada.
-- Recomendação: confirmar a versão resolvida no ambiente e migrar para `db.session.get(Model, id)` conforme a versão suportada.
-
 ## APIs deprecated
 
 A API legada `Query.get()` foi identificada; a versão exata de SQLAlchemy em uso não está travada no `requirements.txt`, então a severidade é MEDIUM e a compatibilidade deve ser conferida no ambiente resolvido antes da migração.
 
-## Fase 3 — Refatoração e validação
+## Fase 3 — Reexecutada
 
-- Configuração externa criada; debug e CORS dependem do ambiente.
-- `User.to_dict()` não expõe senha; novas senhas usam Werkzeug.
-- Token de login passou a ser assinado por `itsdangerous` e `Query.get()` foi migrado.
-- A compilação de todos os arquivos Python passou.
-- Boot e endpoints não foram executados porque Flask e Flask-SQLAlchemy não estão instalados.
-
-## Status da Fase 3
-
-Fase 3 executada após confirmação explícita. Boot e endpoints foram validados em ambiente Python configurado.
+- Playbook reforçado com padrão Flask: rota fina → `service/caso de uso`.
+- Criado `services/task_service.py` para validação, persistência, busca, estatísticas e serialização de tarefas.
+- `routes/task_routes.py` foi reduzido a leitura HTTP e tradução de respostas/erros.
+- Compilação passou para `routes/task_routes.py` e `services/task_service.py`.
+- Validados em banco temporário: `GET /health`, `GET /tasks`, `POST /tasks`, `GET /tasks/<id>`, `PUT /tasks/<id>`, `GET /tasks/search`, `GET /tasks/stats` e `DELETE /tasks/<id>`.
